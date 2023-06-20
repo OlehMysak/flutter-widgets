@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../charts.dart';
 
+import '../../../charts.dart';
 import 'financial_series_base.dart';
 
 /// This class holds the properties of the candle series.
@@ -32,6 +32,7 @@ class CandleSeries<T, D> extends FinancialSeriesBase<T, D> {
     SortingOrder? sortingOrder,
     String? xAxisName,
     String? yAxisName,
+    LinearGradient? gradient,
     String? name,
     Color? bearColor,
     Color? bullColor,
@@ -55,12 +56,15 @@ class CandleSeries<T, D> extends FinancialSeriesBase<T, D> {
     ChartPointInteractionCallback? onPointLongPress,
     CartesianShaderCallback? onCreateShader,
     List<int>? initialSelectedDataIndexes,
+    double? width,
+    double? spacing,
     bool? showIndicationForSameValues,
     List<Trendline>? trendlines,
   }) : super(
             key: key,
             onCreateRenderer: onCreateRenderer,
             name: name,
+            gradient: gradient,
             onRendererCreated: onRendererCreated,
             onPointTap: onPointTap,
             onPointDoubleTap: onPointDoubleTap,
@@ -89,6 +93,8 @@ class CandleSeries<T, D> extends FinancialSeriesBase<T, D> {
             enableTooltip: enableTooltip,
             animationDuration: animationDuration,
             borderWidth: borderWidth ?? 2,
+            width: width,
+            spacing: spacing,
             selectionBehavior: selectionBehavior,
             legendItemText: legendItemText,
             isVisibleInLegend: isVisibleInLegend,
