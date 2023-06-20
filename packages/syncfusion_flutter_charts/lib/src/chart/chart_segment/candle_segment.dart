@@ -18,13 +18,7 @@ import 'chart_segment.dart';
 ///
 class CandleSegment extends ChartSegment {
   // ignore: unused_field
-  late double _highY,
-      _centerHigh,
-      _centerLow,
-      _lowY,
-      _centersY,
-      _topLineY,
-      _bottomLineY;
+  late double _highY, _centerHigh, _centerLow, _lowY, _centersY, _topLineY, _bottomLineY;
   // ignore: unused_field
   late Path _linePath;
   late bool _isTransposed, _showSameValue;
@@ -43,20 +37,22 @@ class CandleSegment extends ChartSegment {
       ..color = _segmentProperties.currentPoint!.isEmpty != null &&
               _segmentProperties.currentPoint!.isEmpty! == true
           ? _segmentProperties.series.emptyPointSettings.color
-          : (_segmentProperties.currentPoint!.pointColorMapper ??
-              _segmentProperties.color!);
+          : (_segmentProperties.currentPoint!.pointColorMapper ?? _segmentProperties.color!);
     assert(_segmentProperties.series.opacity >= 0 == true,
         'The opacity value of the candle series should be greater than or equal to 0.');
     assert(_segmentProperties.series.opacity <= 1 == true,
         'The opacity value of the candle series should be less than or equal to 1.');
-    fillPaint!.color = (_segmentProperties.series.opacity < 1 == true &&
-            fillPaint!.color != Colors.transparent)
-        ? fillPaint!.color.withOpacity(_segmentProperties.series.opacity)
-        : fillPaint!.color;
+
+    final Rect rect = Offset.zero & const Size(1000, 200);
+
+    if ((_segmentProperties.series as FinancialSeriesBase<dynamic, dynamic>).gradient != null) {
+      fillPaint!.shader = (_segmentProperties.series as FinancialSeriesBase<dynamic, dynamic>)
+          .gradient!
+          .createShader(rect);
+    }
     fillPaint!.strokeWidth = _segmentProperties.strokeWidth!;
-    fillPaint!.style = _segmentProperties.isSolid == true
-        ? PaintingStyle.fill
-        : PaintingStyle.stroke;
+    fillPaint!.strokeCap = StrokeCap.round;
+    fillPaint!.style = _segmentProperties.isSolid == true ? PaintingStyle.fill : PaintingStyle.fill;
     _segmentProperties.defaultFillColor = fillPaint;
     setShader(_segmentProperties, fillPaint!);
     return fillPaint!;
@@ -69,13 +65,12 @@ class CandleSegment extends ChartSegment {
     final SegmentProperties candleSegmentProperties = _segmentProperties;
     final Paint strokePaint = Paint();
     if (candleSegmentProperties.strokeColor != null) {
-      strokePaint.color = _segmentProperties.pointColorMapper ??
-          candleSegmentProperties.strokeColor!;
-      strokePaint.color = (candleSegmentProperties.series.opacity < 1 &&
-              strokePaint.color != Colors.transparent)
-          ? strokePaint.color
-              .withOpacity(candleSegmentProperties.series.opacity)
-          : strokePaint.color;
+      strokePaint.color =
+          _segmentProperties.pointColorMapper ?? candleSegmentProperties.strokeColor!;
+      strokePaint.color =
+          (candleSegmentProperties.series.opacity < 1 && strokePaint.color != Colors.transparent)
+              ? strokePaint.color.withOpacity(candleSegmentProperties.series.opacity)
+              : strokePaint.color;
     }
     strokePaint.strokeWidth = candleSegmentProperties.strokeWidth!;
     strokePaint.style = PaintingStyle.stroke;
@@ -88,13 +83,11 @@ class CandleSegment extends ChartSegment {
   @override
   void calculateSegmentPoints() {
     _setSegmentProperties();
-    _segmentProperties.isBull = _segmentProperties.currentPoint!.open <
-        _segmentProperties.currentPoint!.close;
-    _segmentProperties.x =
-        _segmentProperties.high = _segmentProperties.low = double.nan;
+    _segmentProperties.isBull =
+        _segmentProperties.currentPoint!.open < _segmentProperties.currentPoint!.close;
+    _segmentProperties.x = _segmentProperties.high = _segmentProperties.low = double.nan;
     final SeriesRendererDetails seriesRendererDetails =
-        SeriesHelper.getSeriesRendererDetails(
-            _segmentProperties.seriesRenderer);
+        SeriesHelper.getSeriesRendererDetails(_segmentProperties.seriesRenderer);
     _isTransposed = seriesRendererDetails.stateProperties.requireInvertedAxis;
     _segmentProperties.lowPoint = _segmentProperties.currentPoint!.lowPoint!;
     _segmentProperties.highPoint = _segmentProperties.currentPoint!.highPoint!;
@@ -112,82 +105,56 @@ class CandleSegment extends ChartSegment {
     _segmentProperties.closeX = _segmentProperties.currentPoint!.closePoint!.x;
     _segmentProperties.closeY = _segmentProperties.currentPoint!.closePoint!.y;
 
-    _showSameValue =
-        (_segmentProperties.series as FinancialSeriesBase<dynamic, dynamic>)
-                    .showIndicationForSameValues ==
-                true &&
-            (seriesRendererDetails.stateProperties.requireInvertedAxis == false
-                ? _centerHighPoint.y == _centerLowPoint.y
-                : _centerHighPoint.x == _centerLowPoint.x);
+    _showSameValue = (_segmentProperties.series as FinancialSeriesBase<dynamic, dynamic>)
+                .showIndicationForSameValues ==
+            true &&
+        (seriesRendererDetails.stateProperties.requireInvertedAxis == false
+            ? _centerHighPoint.y == _centerLowPoint.y
+            : _centerHighPoint.x == _centerLowPoint.x);
 
-    _segmentProperties.x = _segmentProperties.lowPoint.x =
-        (_showSameValue && _isTransposed)
-            ? _segmentProperties.lowPoint.x - 2
-            : _segmentProperties.lowPoint.x;
+    _segmentProperties.x = _segmentProperties.lowPoint.x = (_showSameValue && _isTransposed)
+        ? _segmentProperties.lowPoint.x - 2
+        : _segmentProperties.lowPoint.x;
     _segmentProperties.highPoint.x = (_showSameValue && _isTransposed)
         ? _segmentProperties.highPoint.x + 2
         : _segmentProperties.highPoint.x;
-    _segmentProperties.low = _segmentProperties.lowPoint.y =
-        (_showSameValue && !_isTransposed)
-            ? _segmentProperties.lowPoint.y - 2
-            : _segmentProperties.lowPoint.y;
-    _segmentProperties.high = _segmentProperties.highPoint.y =
-        (_showSameValue && !_isTransposed)
-            ? _segmentProperties.highPoint.y + 2
-            : _segmentProperties.highPoint.y;
-    _centerHigh = _centerHighPoint.x = (_showSameValue && _isTransposed)
-        ? _centerHighPoint.x + 2
-        : _centerHighPoint.x;
-    _highY = _centerHighPoint.y = (_showSameValue && !_isTransposed)
-        ? _centerHighPoint.y + 2
-        : _centerHighPoint.y;
-    _centerLow = _centerLowPoint.x = (_showSameValue && _isTransposed)
-        ? _centerLowPoint.x - 2
-        : _centerLowPoint.x;
-    _lowY = _centerLowPoint.y = (_showSameValue && !_isTransposed)
-        ? _centerLowPoint.y - 2
-        : _centerLowPoint.y;
+    _segmentProperties.low = _segmentProperties.lowPoint.y = (_showSameValue && !_isTransposed)
+        ? _segmentProperties.lowPoint.y - 2
+        : _segmentProperties.lowPoint.y;
+    _segmentProperties.high = _segmentProperties.highPoint.y = (_showSameValue && !_isTransposed)
+        ? _segmentProperties.highPoint.y + 2
+        : _segmentProperties.highPoint.y;
+    _centerHigh = _centerHighPoint.x =
+        (_showSameValue && _isTransposed) ? _centerHighPoint.x + 2 : _centerHighPoint.x;
+    _highY = _centerHighPoint.y =
+        (_showSameValue && !_isTransposed) ? _centerHighPoint.y + 2 : _centerHighPoint.y;
+    _centerLow = _centerLowPoint.x =
+        (_showSameValue && _isTransposed) ? _centerLowPoint.x - 2 : _centerLowPoint.x;
+    _lowY = _centerLowPoint.y =
+        (_showSameValue && !_isTransposed) ? _centerLowPoint.y - 2 : _centerLowPoint.y;
     _centersY = _segmentProperties.closeY +
         ((_segmentProperties.closeY - _segmentProperties.openY).abs() / 2);
-    _segmentProperties.topRectY =
-        _centersY - ((_centersY - _segmentProperties.closeY).abs() * 1);
-    _segmentProperties.bottomRectY =
-        _centersY + ((_centersY - _segmentProperties.openY).abs() * 1);
+    _segmentProperties.topRectY = _centersY - ((_centersY - _segmentProperties.closeY).abs() * 1);
+    _segmentProperties.bottomRectY = _centersY + ((_centersY - _segmentProperties.openY).abs() * 1);
   }
 
   /// To draw rect path of candle segments.
   void _drawRectPath() {
     _segmentProperties.path.moveTo(
         !_isTransposed ? _segmentProperties.openX : _segmentProperties.topRectY,
-        !_isTransposed
-            ? _segmentProperties.topRectY
-            : _segmentProperties.closeY);
+        !_isTransposed ? _segmentProperties.topRectY : _segmentProperties.closeY);
     _segmentProperties.path.lineTo(
-        !_isTransposed
-            ? _segmentProperties.closeX
-            : _segmentProperties.topRectY,
-        !_isTransposed
-            ? _segmentProperties.topRectY
-            : _segmentProperties.openY);
+        !_isTransposed ? _segmentProperties.closeX : _segmentProperties.topRectY,
+        !_isTransposed ? _segmentProperties.topRectY : _segmentProperties.openY);
     _segmentProperties.path.lineTo(
-        !_isTransposed
-            ? _segmentProperties.closeX
-            : _segmentProperties.bottomRectY,
-        !_isTransposed
-            ? _segmentProperties.bottomRectY
-            : _segmentProperties.openY);
+        !_isTransposed ? _segmentProperties.closeX : _segmentProperties.bottomRectY,
+        !_isTransposed ? _segmentProperties.bottomRectY : _segmentProperties.openY);
     _segmentProperties.path.lineTo(
-        !_isTransposed
-            ? _segmentProperties.openX
-            : _segmentProperties.bottomRectY,
-        !_isTransposed
-            ? _segmentProperties.bottomRectY
-            : _segmentProperties.closeY);
+        !_isTransposed ? _segmentProperties.openX : _segmentProperties.bottomRectY,
+        !_isTransposed ? _segmentProperties.bottomRectY : _segmentProperties.closeY);
     _segmentProperties.path.lineTo(
         !_isTransposed ? _segmentProperties.openX : _segmentProperties.topRectY,
-        !_isTransposed
-            ? _segmentProperties.topRectY
-            : _segmentProperties.closeY);
+        !_isTransposed ? _segmentProperties.topRectY : _segmentProperties.closeY);
     _segmentProperties.path.close();
   }
 
@@ -199,8 +166,8 @@ class CandleSegment extends ChartSegment {
   }
 
   void _drawFillLine(Canvas canvas) {
-    final bool isOpen = _segmentProperties.currentPoint!.open >
-        _segmentProperties.currentPoint!.close;
+    final bool isOpen =
+        _segmentProperties.currentPoint!.open > _segmentProperties.currentPoint!.close;
     canvas.drawLine(
         Offset(_segmentProperties.topRectY, _highY),
         Offset(
@@ -227,10 +194,8 @@ class CandleSegment extends ChartSegment {
 
   void _calculateCandlePositions(num openX, num closeX) {
     _centersY = closeX + ((openX - closeX).abs() / 2);
-    _segmentProperties.topRectY =
-        _centersY + ((_centersY - openX).abs() * animationFactor);
-    _segmentProperties.bottomRectY =
-        _centersY - ((_centersY - closeX).abs() * animationFactor);
+    _segmentProperties.topRectY = _centersY + ((_centersY - openX).abs() * animationFactor);
+    _segmentProperties.bottomRectY = _centersY - ((_centersY - closeX).abs() * animationFactor);
   }
 
   /// Draws segment in series bounds.
@@ -238,41 +203,32 @@ class CandleSegment extends ChartSegment {
   void onPaint(Canvas canvas) {
     _setSegmentProperties();
     final SeriesRendererDetails seriesRendererDetails =
-        SeriesHelper.getSeriesRendererDetails(
-            _segmentProperties.seriesRenderer);
+        SeriesHelper.getSeriesRendererDetails(_segmentProperties.seriesRenderer);
     if (fillPaint != null &&
         (seriesRendererDetails.reAnimate == true ||
-            !(seriesRendererDetails
-                        .stateProperties.renderingDetails.widgetNeedUpdate ==
-                    true &&
-                seriesRendererDetails
-                        .stateProperties.renderingDetails.isLegendToggled ==
-                    false))) {
+            !(seriesRendererDetails.stateProperties.renderingDetails.widgetNeedUpdate == true &&
+                seriesRendererDetails.stateProperties.renderingDetails.isLegendToggled == false))) {
       _segmentProperties.path = Path();
       _linePath = Path();
 
       if (!_isTransposed &&
-          _segmentProperties.currentPoint!.open >
-                  _segmentProperties.currentPoint!.close ==
-              true) {
+          _segmentProperties.currentPoint!.open > _segmentProperties.currentPoint!.close == true) {
         final double temp = _segmentProperties.closeY;
         _segmentProperties.closeY = _segmentProperties.openY;
         _segmentProperties.openY = temp;
       }
 
-      if (seriesRendererDetails
-              .stateProperties.renderingDetails.isLegendToggled ==
-          true) {
+      if (seriesRendererDetails.stateProperties.renderingDetails.isLegendToggled == true) {
         animationFactor = 1;
       }
       _centersY = _segmentProperties.closeY +
           ((_segmentProperties.closeY - _segmentProperties.openY).abs() / 2);
-      _segmentProperties.topRectY = _centersY -
-          ((_centersY - _segmentProperties.closeY).abs() * animationFactor);
+      _segmentProperties.topRectY =
+          _centersY - ((_centersY - _segmentProperties.closeY).abs() * animationFactor);
       _topLineY = _segmentProperties.topRectY -
           ((_segmentProperties.topRectY - _highY).abs() * animationFactor);
-      _segmentProperties.bottomRectY = _centersY +
-          ((_centersY - _segmentProperties.openY).abs() * animationFactor);
+      _segmentProperties.bottomRectY =
+          _centersY + ((_centersY - _segmentProperties.openY).abs() * animationFactor);
       _bottomLineY = _segmentProperties.bottomRectY +
           ((_segmentProperties.bottomRectY - _lowY).abs() * animationFactor);
 
@@ -287,13 +243,9 @@ class CandleSegment extends ChartSegment {
           : _topLineY;
 
       if (_isTransposed) {
-        _segmentProperties.currentPoint!.open >
-                    _segmentProperties.currentPoint!.close ==
-                true
-            ? _calculateCandlePositions(
-                _segmentProperties.openX, _segmentProperties.closeX)
-            : _calculateCandlePositions(
-                _segmentProperties.closeX, _segmentProperties.openX);
+        _segmentProperties.currentPoint!.open > _segmentProperties.currentPoint!.close == true
+            ? _calculateCandlePositions(_segmentProperties.openX, _segmentProperties.closeX)
+            : _calculateCandlePositions(_segmentProperties.closeX, _segmentProperties.openX);
 
         if (_showSameValue) {
           canvas.drawLine(Offset(_centerHighPoint.x, _centerHighPoint.y),
@@ -303,48 +255,37 @@ class CandleSegment extends ChartSegment {
           _centerHigh < _segmentProperties.closeX
               ? _segmentProperties.path.lineTo(
                   _segmentProperties.topRectY -
-                      ((_segmentProperties.closeX - _centerHigh).abs() *
-                          animationFactor),
+                      ((_segmentProperties.closeX - _centerHigh).abs() * animationFactor),
                   _highY)
               : _segmentProperties.path.lineTo(
                   _segmentProperties.topRectY +
-                      ((_segmentProperties.closeX - _centerHigh).abs() *
-                          animationFactor),
+                      ((_segmentProperties.closeX - _centerHigh).abs() * animationFactor),
                   _highY);
-          _segmentProperties.path
-              .moveTo(_segmentProperties.bottomRectY, _highY);
+          _segmentProperties.path.moveTo(_segmentProperties.bottomRectY, _highY);
           _centerLow > _segmentProperties.openX
               ? _segmentProperties.path.lineTo(
                   _segmentProperties.bottomRectY +
-                      ((_segmentProperties.openX - _centerLow).abs() *
-                          animationFactor),
+                      ((_segmentProperties.openX - _centerLow).abs() * animationFactor),
                   _highY)
               : _segmentProperties.path.lineTo(
                   _segmentProperties.bottomRectY -
-                      ((_segmentProperties.openX - _centerLow).abs() *
-                          animationFactor),
+                      ((_segmentProperties.openX - _centerLow).abs() * animationFactor),
                   _highY);
           _linePath = _segmentProperties.path;
         }
         _segmentProperties.openX == _segmentProperties.closeX
-            ? canvas.drawLine(
-                Offset(_segmentProperties.openX, _segmentProperties.openY),
-                Offset(_segmentProperties.closeX, _segmentProperties.closeY),
-                fillPaint!)
+            ? canvas.drawLine(Offset(_segmentProperties.openX, _segmentProperties.openY),
+                Offset(_segmentProperties.closeX, _segmentProperties.closeY), fillPaint!)
             : _drawRectPath();
       } else {
         _showSameValue
-            ? canvas.drawLine(
-                Offset(_centerHighPoint.x, _segmentProperties.highPoint.y),
-                Offset(_centerHighPoint.x, _segmentProperties.lowPoint.y),
-                fillPaint!)
+            ? canvas.drawLine(Offset(_centerHighPoint.x, _segmentProperties.highPoint.y),
+                Offset(_centerHighPoint.x, _segmentProperties.lowPoint.y), fillPaint!)
             : _drawLine(canvas);
 
         _segmentProperties.openY == _segmentProperties.closeY
-            ? canvas.drawLine(
-                Offset(_segmentProperties.openX, _segmentProperties.openY),
-                Offset(_segmentProperties.closeX, _segmentProperties.closeY),
-                fillPaint!)
+            ? canvas.drawLine(Offset(_segmentProperties.openX, _segmentProperties.openY),
+                Offset(_segmentProperties.closeX, _segmentProperties.closeY), fillPaint!)
             : _drawRectPath();
       }
 
@@ -352,47 +293,36 @@ class CandleSegment extends ChartSegment {
           seriesRendererDetails.dashArray![1] != 0 &&
           fillPaint!.style != PaintingStyle.fill &&
           _segmentProperties.series.animationDuration <= 0 == true) {
-        drawDashedLine(canvas, seriesRendererDetails.dashArray!, fillPaint!,
-            _segmentProperties.path);
+        drawDashedLine(
+            canvas, seriesRendererDetails.dashArray!, fillPaint!, _segmentProperties.path);
       } else {
         canvas.drawPath(_segmentProperties.path, fillPaint!);
         if (fillPaint!.style == PaintingStyle.fill) {
           _isTransposed
               ? _showSameValue
-                  ? canvas.drawLine(
-                      Offset(_centerHighPoint.x, _centerHighPoint.y),
-                      Offset(_centerLowPoint.x, _centerHighPoint.y),
-                      fillPaint!)
+                  ? canvas.drawLine(Offset(_centerHighPoint.x, _centerHighPoint.y),
+                      Offset(_centerLowPoint.x, _centerHighPoint.y), fillPaint!)
                   : _drawFillLine(canvas)
               : _showSameValue
-                  ? canvas.drawLine(
-                      Offset(
-                          _centerHighPoint.x, _segmentProperties.highPoint.y),
-                      Offset(_centerHighPoint.x, _segmentProperties.lowPoint.y),
-                      fillPaint!)
+                  ? canvas.drawLine(Offset(_centerHighPoint.x, _segmentProperties.highPoint.y),
+                      Offset(_centerHighPoint.x, _segmentProperties.lowPoint.y), fillPaint!)
                   : _drawLine(canvas);
         }
       }
-    } else if (seriesRendererDetails
-            .stateProperties.renderingDetails.isLegendToggled ==
-        false) {
-      _currentSegment =
-          seriesRendererDetails.segments[currentSegmentIndex!] as CandleSegment;
+    } else if (seriesRendererDetails.stateProperties.renderingDetails.isLegendToggled == false) {
+      _currentSegment = seriesRendererDetails.segments[currentSegmentIndex!] as CandleSegment;
       final SegmentProperties currentSegmentProperties =
           SegmentHelper.getSegmentProperties(_currentSegment);
       SegmentProperties? oldSegmentProperties;
       final SeriesRendererDetails? oldRendererDetails =
           currentSegmentProperties.oldSeriesRenderer != null
-              ? SeriesHelper.getSeriesRendererDetails(
-                  currentSegmentProperties.oldSeriesRenderer!)
+              ? SeriesHelper.getSeriesRendererDetails(currentSegmentProperties.oldSeriesRenderer!)
               : null;
       _oldSegment = seriesRendererDetails.reAnimate == false &&
               (oldRendererDetails != null &&
                   oldRendererDetails.segments.isNotEmpty == true &&
                   oldRendererDetails.segments[0] is CandleSegment &&
-                  oldRendererDetails.segments.length - 1 >=
-                          currentSegmentIndex! ==
-                      true)
+                  oldRendererDetails.segments.length - 1 >= currentSegmentIndex! == true)
           ? oldRendererDetails.segments[currentSegmentIndex!] as CandleSegment?
           : null;
       if (_oldSegment != null) {
@@ -423,8 +353,7 @@ class CandleSegment extends ChartSegment {
           animationFactor,
           fillPaint!,
           canvas,
-          SeriesHelper.getSeriesRendererDetails(
-              _segmentProperties.seriesRenderer));
+          SeriesHelper.getSeriesRendererDetails(_segmentProperties.seriesRenderer));
     }
   }
 
