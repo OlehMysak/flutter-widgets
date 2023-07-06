@@ -93,19 +93,14 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
   bool isSelectionEnable = false;
 
   /// To set style properties for selected points.
-  StyleOptions? selectPoint(
-      int currentPointIndex,
-      CircularSeriesRendererExtension seriesRenderer,
-      SfCircularChart chart,
-      ChartPoint<dynamic>? point) {
+  StyleOptions? selectPoint(int currentPointIndex, CircularSeriesRendererExtension seriesRenderer,
+      SfCircularChart chart, ChartPoint<dynamic>? point) {
     StyleOptions? pointStyle;
     final dynamic selection = series.selectionBehavior;
     if (selection.enable == true) {
       if (stateProperties.renderingDetails.selectionData.isNotEmpty) {
         int selectionIndex;
-        for (int i = 0;
-            i < stateProperties.renderingDetails.selectionData.length;
-            i++) {
+        for (int i = 0; i < stateProperties.renderingDetails.selectionData.length; i++) {
           selectionIndex = stateProperties.renderingDetails.selectionData[i];
           if (currentPointIndex == selectionIndex) {
             pointStyle = StyleOptions(
@@ -120,8 +115,7 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
                     : selection.selectedBorderColor,
                 opacity: selection.selectedOpacity);
             break;
-          } else if (i ==
-              stateProperties.renderingDetails.selectionData.length - 1) {
+          } else if (i == stateProperties.renderingDetails.selectionData.length - 1) {
             pointStyle = StyleOptions(
                 fill: seriesRenderer.selectionArgs != null
                     ? seriesRenderer.selectionArgs!.unselectedColor
@@ -157,79 +151,60 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
       ChartPoint<dynamic>? oldPoint,
       List<ChartPoint<dynamic>?>? oldPointList) {
     final bool isDynamicUpdate = oldPoint != null;
-    final num oldStartAngle = oldPoint?.startAngle ?? 0;
-    final num oldEndAngle = oldPoint?.endAngle ?? 0;
+    final num? oldStartAngle = oldPoint?.startAngle;
+    final num? oldEndAngle = oldPoint?.endAngle;
     num? degree, pointEndAngle;
 
     /// Below lines for dynamic dataSource changes.
     if (isDynamicUpdate) {
       if (!oldPoint.isVisible && point.isVisible) {
-        final num val = point.startAngle ==
-                seriesRenderer.segmentRenderingValues['start']!
+        final num val = point.startAngle == seriesRenderer.segmentRenderingValues['start']!
             ? seriesRenderer.segmentRenderingValues['start']!
-            : oldPointList![
-                    getVisiblePointIndex(oldPointList, 'before', pointIndex)!]!
-                .endAngle!;
-        pointStartAngle =
-            val - (val - point.startAngle!) * animationDegreeValue;
+            : oldPointList![getVisiblePointIndex(oldPointList, 'before', pointIndex)!]!.endAngle!;
+        pointStartAngle = val - (val - point.startAngle!) * animationDegreeValue;
         pointEndAngle = val + (point.endAngle! - val) * animationDegreeValue;
         degree = pointEndAngle - pointStartAngle;
       } else if (oldPoint.isVisible && !point.isVisible) {
-        if (oldPoint.startAngle!.round() ==
-                seriesRenderer.segmentRenderingValues['start'] &&
-            (oldPoint.endAngle!.round() ==
-                    seriesRenderer.segmentRenderingValues['end'] ||
+        if (oldPoint.startAngle!.round() == seriesRenderer.segmentRenderingValues['start'] &&
+            (oldPoint.endAngle!.round() == seriesRenderer.segmentRenderingValues['end'] ||
                 oldPoint.endAngle!.round() ==
                     360 + seriesRenderer.segmentRenderingValues['end']!)) {
           pointStartAngle = oldPoint.startAngle!;
           pointEndAngle = oldPoint.endAngle! -
-              (oldPoint.endAngle! - oldPoint.startAngle!) *
-                  animationDegreeValue;
+              (oldPoint.endAngle! - oldPoint.startAngle!) * animationDegreeValue;
         } else if (oldPoint.startAngle == oldPoint.endAngle) {
           pointStartAngle = pointEndAngle = oldPoint.startAngle!;
         } else {
           pointStartAngle = oldPoint.startAngle! -
               (oldPoint.startAngle! -
-                      (oldPoint.startAngle ==
-                              seriesRenderer.segmentRenderingValues['start']!
+                      (oldPoint.startAngle == seriesRenderer.segmentRenderingValues['start']!
                           ? seriesRenderer.segmentRenderingValues['start']!
                           : seriesRenderer
                               .renderPoints![getVisiblePointIndex(
-                                  seriesRenderer.renderPoints!,
-                                  'before',
-                                  pointIndex)!]
+                                  seriesRenderer.renderPoints!, 'before', pointIndex)!]
                               .endAngle!)) *
                   animationDegreeValue;
           pointEndAngle = oldPoint.endAngle! -
               (oldPoint.endAngle! -
                       ((oldPoint.endAngle!.round() ==
-                                  seriesRenderer
-                                      .segmentRenderingValues['end'] ||
+                                  seriesRenderer.segmentRenderingValues['end'] ||
                               oldPoint.endAngle!.round() ==
-                                  360 +
-                                      seriesRenderer
-                                          .segmentRenderingValues['end']!)
+                                  360 + seriesRenderer.segmentRenderingValues['end']!)
                           ? oldPoint.endAngle!
                           : seriesRenderer
                               .renderPoints![getVisiblePointIndex(
-                                  seriesRenderer.renderPoints!,
-                                  'after',
-                                  pointIndex)!]
+                                  seriesRenderer.renderPoints!, 'after', pointIndex)!]
                               .startAngle!)) *
                   animationDegreeValue;
         }
         degree = pointEndAngle - pointStartAngle;
       } else if (point.isVisible && oldPoint.isVisible) {
-        pointStartAngle = (point.startAngle! > oldStartAngle)
-            ? oldStartAngle +
-                ((point.startAngle! - oldStartAngle) * animationDegreeValue)
-            : oldStartAngle -
-                ((oldStartAngle - point.startAngle!) * animationDegreeValue);
-        pointEndAngle = (point.endAngle! > oldEndAngle)
-            ? oldEndAngle +
-                ((point.endAngle! - oldEndAngle) * animationDegreeValue)
-            : oldEndAngle -
-                ((oldEndAngle - point.endAngle!) * animationDegreeValue);
+        pointStartAngle = (point.startAngle! > oldStartAngle!)
+            ? oldStartAngle + ((point.startAngle! - oldStartAngle) * animationDegreeValue)
+            : oldStartAngle - ((oldStartAngle - point.startAngle!) * animationDegreeValue);
+        pointEndAngle = (point.endAngle! > oldEndAngle!)
+            ? oldEndAngle - ((point.endAngle! - oldEndAngle) * animationDegreeValue)
+            : oldEndAngle - ((oldEndAngle - point.endAngle!) * animationDegreeValue);
         degree = pointEndAngle - pointStartAngle;
       }
     } else if (point.isVisible) {
@@ -239,20 +214,8 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
     outerRadius = stateProperties.renderingDetails.initialRender!
         ? animationRadiusValue * outerRadius!
         : outerRadius;
-    _calculatePath(
-        pointIndex,
-        seriesIndex,
-        chart,
-        seriesRenderer,
-        point,
-        oldPoint,
-        canvas,
-        degree,
-        innerRadius,
-        outerRadius,
-        pointStartAngle,
-        pointEndAngle,
-        isDynamicUpdate);
+    _calculatePath(pointIndex, seriesIndex, chart, seriesRenderer, point, oldPoint, canvas, degree,
+        innerRadius, outerRadius, pointStartAngle, pointEndAngle, isDynamicUpdate);
     return pointEndAngle;
   }
 
@@ -282,42 +245,37 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
       innerRadius = innerRadius ?? oldPoint!.innerRadius;
       outerRadius = outerRadius ?? oldPoint!.outerRadius;
       if (cornerStyle != CornerStyle.bothFlat) {
-        final num angleDeviation =
-            findAngleDeviation(innerRadius!, outerRadius!, 360);
-        actualStartAngle = (cornerStyle == CornerStyle.startCurve ||
-                cornerStyle == CornerStyle.bothCurve)
-            ? (pointStartAngle! + angleDeviation)
-            : pointStartAngle!;
-        actualEndAngle = (cornerStyle == CornerStyle.endCurve ||
-                cornerStyle == CornerStyle.bothCurve)
-            ? (pointEndAngle! - angleDeviation)
-            : pointEndAngle!;
+        final num angleDeviation = findAngleDeviation(innerRadius!, outerRadius!, 360);
+        actualStartAngle =
+            (cornerStyle == CornerStyle.startCurve || cornerStyle == CornerStyle.bothCurve)
+                ? (pointStartAngle! + angleDeviation)
+                : pointStartAngle!;
+        actualEndAngle =
+            (cornerStyle == CornerStyle.endCurve || cornerStyle == CornerStyle.bothCurve)
+                ? (pointEndAngle! - angleDeviation)
+                : pointEndAngle!;
       }
       renderPath = Path();
-      renderPath = (cornerStyle == CornerStyle.startCurve ||
-              cornerStyle == CornerStyle.endCurve ||
-              cornerStyle == CornerStyle.bothCurve)
-          ? getRoundedCornerArcPath(
-              innerRadius!,
-              outerRadius!,
-              point!.center ?? oldPoint!.center,
-              actualStartAngle,
-              actualEndAngle,
-              degree,
-              cornerStyle,
-              point)
+      //TODO: round
+      renderPath = (point!.radius != '120' &&
+              (cornerStyle == CornerStyle.startCurve ||
+                  cornerStyle == CornerStyle.endCurve ||
+                  cornerStyle == CornerStyle.bothCurve))
+          ? getRoundedCornerArcPath(innerRadius!, outerRadius!, point.center ?? oldPoint!.center,
+              actualStartAngle, actualEndAngle, degree, cornerStyle, point)
           : getArcPath(
               innerRadius!,
               outerRadius!,
-              point!.center ?? oldPoint!.center!,
+              point.center ?? oldPoint!.center!,
               pointStartAngle,
               pointEndAngle,
               degree,
               chart,
+              point: point,
               stateProperties.renderingDetails.animateCompleted);
     }
-    drawDataPoints(pointIndex, seriesIndex, chart, seriesRenderer, point,
-        canvas, renderPath, degree, innerRadius);
+    drawDataPoints(pointIndex, seriesIndex, chart, seriesRenderer, point, canvas, renderPath,
+        degree, innerRadius);
   }
 
   /// Draw slice path.
@@ -344,19 +302,13 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
           point.outerRadius!);
       seriesRenderer.pointRegions.add(pointRegion);
     }
-    final StyleOptions? style =
-        selectPoint(pointIndex, seriesRenderer, chart, point);
+    final StyleOptions? style = selectPoint(pointIndex, seriesRenderer, chart, point);
 
     final Color? fillColor = style != null && style.fill != null
         ? style.fill
         : (point != null && point.fill != Colors.transparent
-            ? seriesRenderer.renderer.getPointColor(
-                seriesRenderer,
-                point,
-                pointIndex,
-                seriesIndex,
-                point.fill,
-                seriesRenderer.series.opacity)
+            ? seriesRenderer.renderer.getPointColor(seriesRenderer, point, pointIndex, seriesIndex,
+                point.fill, seriesRenderer.series.opacity)
             : point!.fill);
 
     final Color? strokeColor = style != null && style.strokeColor != null
@@ -369,19 +321,17 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
         : seriesRenderer.renderer.getPointStrokeWidth(
             seriesRenderer, point, pointIndex, seriesIndex, point!.strokeWidth);
 
-    assert(seriesRenderer.series.opacity >= 0,
-        'The opacity value will not accept negative numbers.');
-    assert(seriesRenderer.series.opacity <= 1,
-        'The opacity value must be less than 1.');
+    assert(
+        seriesRenderer.series.opacity >= 0, 'The opacity value will not accept negative numbers.');
+    assert(seriesRenderer.series.opacity <= 1, 'The opacity value must be less than 1.');
     final double? opacity = style != null && style.opacity != null
         ? style.opacity
-        : seriesRenderer.renderer.getOpacity(seriesRenderer, point, pointIndex,
-            seriesIndex, seriesRenderer.series.opacity);
+        : seriesRenderer.renderer.getOpacity(
+            seriesRenderer, point, pointIndex, seriesIndex, seriesRenderer.series.opacity);
 
     Shader? renderModeShader;
 
-    if (chart.series[0].pointRenderMode == PointRenderMode.gradient &&
-        point?.shader == null) {
+    if (chart.series[0].pointRenderMode == PointRenderMode.gradient && point?.shader == null) {
       final List<Color> colorsList = <Color>[];
       final List<double> stopsList = <double>[];
       num initStops = 0;
@@ -391,16 +341,13 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
           colorsList.add(point.fill);
           if (stopsList.isEmpty) {
             initStops = (point.y! / segmentRenderingValues['sumOfPoints']!) / 4;
-            stopsList.add(
-                point.y! / segmentRenderingValues['sumOfPoints']! - initStops);
+            stopsList.add(point.y! / segmentRenderingValues['sumOfPoints']! - initStops);
           } else {
             if (stopsList.length == 1) {
-              stopsList.add((point.y! / segmentRenderingValues['sumOfPoints']! +
-                      stopsList.last) +
+              stopsList.add((point.y! / segmentRenderingValues['sumOfPoints']! + stopsList.last) +
                   initStops / 1.5);
             } else {
-              stopsList.add(point.y! / segmentRenderingValues['sumOfPoints']! +
-                  stopsList.last);
+              stopsList.add(point.y! / segmentRenderingValues['sumOfPoints']! + stopsList.last);
             }
           }
         }
@@ -449,8 +396,7 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
                   chart.onCreateShader != null)) &&
           point.shader == null) {
         Rect? innerRect;
-        if (seriesRenderer is DoughnutSeriesRenderer &&
-            seriesRenderer.innerRadialradius != null) {
+        if (seriesRenderer is DoughnutSeriesRenderer && seriesRenderer.innerRadialradius != null) {
           innerRect = Rect.fromCircle(
             center: center!,
             radius: seriesRenderer.innerRadialradius!.toDouble(),
@@ -465,9 +411,7 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
           renderList.clear();
           seriesRenderer.renderList.add(StyleOptions(
               fill: fillColor!,
-              strokeWidth: stateProperties.renderingDetails.animateCompleted
-                  ? strokeWidth!
-                  : 0,
+              strokeWidth: stateProperties.renderingDetails.animateCompleted ? strokeWidth! : 0,
               strokeColor: strokeColor!,
               opacity: opacity));
           seriesRenderer.renderList.add(PointHelper.getPathRect(point));
@@ -478,17 +422,14 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
             canvas,
             StyleOptions(
                 fill: fillColor!,
-                strokeWidth: stateProperties.renderingDetails.animateCompleted
-                    ? strokeWidth!
-                    : 0,
+                strokeWidth: stateProperties.renderingDetails.animateCompleted ? strokeWidth! : 0,
                 strokeColor: strokeColor!,
                 opacity: opacity),
             renderPath,
             PointHelper.getPathRect(point!),
             point.shader ?? renderModeShader);
         // ignore: unnecessary_null_comparison
-        if (point != null &&
-            (renderModeShader != null || point.shader != null)) {
+        if (point != null && (renderModeShader != null || point.shader != null)) {
           // ignore: unnecessary_null_comparison
           if (strokeColor != null &&
               strokeWidth != null &&
@@ -507,8 +448,7 @@ class CircularSeriesRendererExtension implements CircularSeriesRenderer {
 }
 
 /// Creates series renderer for Pie series.
-class PieSeriesRendererExtension extends PieSeriesRenderer
-    with CircularSeriesRendererExtension {
+class PieSeriesRendererExtension extends PieSeriesRenderer with CircularSeriesRendererExtension {
   /// Calling the default constructor of PieSeriesRenderer class.
   PieSeriesRendererExtension() {
     seriesType = 'pie';
@@ -582,8 +522,7 @@ class RadialBarSeriesRendererExtension extends RadialBarSeriesRenderer
   Offset? center;
 
   /// Method to find first visible point.
-  int? getFirstVisiblePointIndex(
-      RadialBarSeriesRendererExtension seriesRenderer) {
+  int? getFirstVisiblePointIndex(RadialBarSeriesRendererExtension seriesRenderer) {
     for (int i = 0; i < seriesRenderer.renderPoints!.length; i++) {
       if (seriesRenderer.renderPoints![i].isVisible) {
         return i;
@@ -594,28 +533,22 @@ class RadialBarSeriesRendererExtension extends RadialBarSeriesRenderer
 
   /// Method for calculating animation for visible points on legend toggle.
   ///
-  void calculateVisiblePointLegendToggleAnimation(ChartPoint<dynamic> point,
-      ChartPoint<dynamic>? oldPoint, int i, num animationValue) {
+  void calculateVisiblePointLegendToggleAnimation(
+      ChartPoint<dynamic> point, ChartPoint<dynamic>? oldPoint, int i, num animationValue) {
     if (!oldPoint!.isVisible && point.isVisible) {
       radius = i == 0
           ? point.outerRadius!
-          : (point.innerRadius! +
-              (point.outerRadius! - point.innerRadius!) * animationValue);
+          : (point.innerRadius! + (point.outerRadius! - point.innerRadius!) * animationValue);
       innerRadius = i == 0
-          ? (point.outerRadius! -
-              (point.outerRadius! - point.innerRadius!) * animationValue)
+          ? (point.outerRadius! - (point.outerRadius! - point.innerRadius!) * animationValue)
           : innerRadius;
     } else {
       radius = (point.outerRadius! > oldPoint.outerRadius!)
-          ? oldPoint.outerRadius! +
-              (point.outerRadius! - oldPoint.outerRadius!) * animationValue
-          : oldPoint.outerRadius! -
-              (oldPoint.outerRadius! - point.outerRadius!) * animationValue;
+          ? oldPoint.outerRadius! + (point.outerRadius! - oldPoint.outerRadius!) * animationValue
+          : oldPoint.outerRadius! - (oldPoint.outerRadius! - point.outerRadius!) * animationValue;
       innerRadius = (point.innerRadius! > oldPoint.innerRadius!)
-          ? oldPoint.innerRadius! +
-              (point.innerRadius! - oldPoint.innerRadius!) * animationValue
-          : oldPoint.innerRadius! -
-              (oldPoint.innerRadius! - point.innerRadius!) * animationValue;
+          ? oldPoint.innerRadius! + (point.innerRadius! - oldPoint.innerRadius!) * animationValue
+          : oldPoint.innerRadius! - (oldPoint.innerRadius! - point.innerRadius!) * animationValue;
     }
   }
 
@@ -649,15 +582,8 @@ class RadialBarSeriesRendererExtension extends RadialBarSeriesRenderer
             strokeWidth: series.trackBorderWidth,
             strokeColor: series.trackBorderColor,
             opacity: series.trackOpacity),
-        getArcPath(
-            hide ? oldInnerRadius! : innerRadius,
-            hide ? oldRadius! : radius.toDouble(),
-            center!,
-            0,
-            360 - 0.001,
-            360 - 0.001,
-            chart,
-            true));
+        getArcPath(hide ? oldInnerRadius! : innerRadius, hide ? oldRadius! : radius.toDouble(),
+            center!, 0, 360 - 0.001, 360 - 0.001, chart, true));
     if (radius > 0 && degree != null && degree > 0) {
       _renderRadialPoints(
           point,
@@ -712,63 +638,44 @@ class RadialBarSeriesRendererExtension extends RadialBarSeriesRenderer
       seriesRenderer.pointRegions.add(pointRegion);
     }
 
-    final num angleDeviation = findAngleDeviation(
-        hide ? oldInnerRadius! : innerRadius, hide ? oldRadius! : radius, 360);
+    final num angleDeviation =
+        findAngleDeviation(hide ? oldInnerRadius! : innerRadius, hide ? oldRadius! : radius, 360);
     final CornerStyle cornerStyle = series.cornerStyle;
-    if (cornerStyle == CornerStyle.bothCurve ||
-        cornerStyle == CornerStyle.startCurve) {
-      hide
-          ? oldStart = oldPoint!.startAngle! + angleDeviation
-          : pointStartAngle += angleDeviation;
+    if (cornerStyle == CornerStyle.bothCurve || cornerStyle == CornerStyle.startCurve) {
+      hide ? oldStart = oldPoint!.startAngle! + angleDeviation : pointStartAngle += angleDeviation;
     }
-    if (cornerStyle == CornerStyle.bothCurve ||
-        cornerStyle == CornerStyle.endCurve) {
+    if (cornerStyle == CornerStyle.bothCurve || cornerStyle == CornerStyle.endCurve) {
       hide
           ? oldEnd = oldPoint!.endAngle! - angleDeviation
           : pointEndAngle = pointEndAngle! - angleDeviation;
     }
-    final StyleOptions? style =
-        seriesRenderer.selectPoint(i, seriesRenderer, chart, point);
+    final StyleOptions? style = seriesRenderer.selectPoint(i, seriesRenderer, chart, point);
     fillColor = style != null && style.fill != null
         ? style.fill!
         : (point.fill != Colors.transparent
-            ? seriesRenderer.renderer.getPointColor(
-                seriesRenderer, point, i, index, point.fill, series.opacity)!
+            ? seriesRenderer.renderer
+                .getPointColor(seriesRenderer, point, i, index, point.fill, series.opacity)!
             : point.fill);
     strokeColor = style != null && style.strokeColor != null
         ? style.strokeColor!
-        : seriesRenderer.renderer.getPointStrokeColor(
-            seriesRenderer, point, i, index, point.strokeColor);
+        : seriesRenderer.renderer
+            .getPointStrokeColor(seriesRenderer, point, i, index, point.strokeColor);
     strokeWidth = style != null && style.strokeWidth != null
         ? style.strokeWidth!.toDouble()
         : seriesRenderer.renderer
-            .getPointStrokeWidth(
-                seriesRenderer, point, i, index, point.strokeWidth)
+            .getPointStrokeWidth(seriesRenderer, point, i, index, point.strokeWidth)
             .toDouble();
     opacity = style != null && style.opacity != null
         ? style.opacity!.toDouble()
-        : seriesRenderer.renderer
-            .getOpacity(seriesRenderer, point, i, index, series.opacity);
+        : seriesRenderer.renderer.getOpacity(seriesRenderer, point, i, index, series.opacity);
     seriesRenderer.innerRadialradius =
         !point.isVisible || (seriesRenderer.innerRadialradius == null)
             ? innerRadius
             : seriesRenderer.innerRadialradius;
     seriesRenderer.renderList.clear();
 
-    _drawRadialBarPath(
-        canvas,
-        point,
-        chart,
-        seriesRenderer,
-        hide,
-        pointStartAngle,
-        pointEndAngle,
-        oldRadius,
-        oldInnerRadius,
-        oldStart,
-        oldEnd,
-        degree,
-        actualDegree);
+    _drawRadialBarPath(canvas, point, chart, seriesRenderer, hide, pointStartAngle, pointEndAngle,
+        oldRadius, oldInnerRadius, oldStart, oldEnd, degree, actualDegree);
   }
 
   /// Method to draw the radial bar series path.
@@ -798,25 +705,19 @@ class RadialBarSeriesRendererExtension extends RadialBarSeriesRenderer
           360 - 0.001,
           series.cornerStyle,
           point);
-      final double currentInnerRadius =
-          hide ? oldInnerRadius!.toDouble() : innerRadius.toDouble();
-      final double outerRadius =
-          hide ? oldRadius!.toDouble() : radius.toDouble();
-      final double startAngle =
-          hide ? oldStart!.toDouble() : pointStartAngle.toDouble();
-      final double endAngle =
-          hide ? oldEnd!.toDouble() : pointEndAngle!.toDouble();
+      final double currentInnerRadius = hide ? oldInnerRadius!.toDouble() : innerRadius.toDouble();
+      final double outerRadius = hide ? oldRadius!.toDouble() : radius.toDouble();
+      final double startAngle = hide ? oldStart!.toDouble() : pointStartAngle.toDouble();
+      final double endAngle = hide ? oldEnd!.toDouble() : pointEndAngle!.toDouble();
       path.arcTo(
           Rect.fromCircle(center: center!, radius: outerRadius.toDouble()),
           degreesToRadians(startAngle).toDouble(),
           degreesToRadians(endAngle - startAngle).toDouble(),
           true);
       path.arcTo(
-          Rect.fromCircle(
-              center: center!, radius: currentInnerRadius.toDouble()),
+          Rect.fromCircle(center: center!, radius: currentInnerRadius.toDouble()),
           degreesToRadians(endAngle.toDouble()).toDouble(),
-          (degreesToRadians(startAngle.toDouble()) -
-                  degreesToRadians(endAngle.toDouble()))
+          (degreesToRadians(startAngle.toDouble()) - degreesToRadians(endAngle.toDouble()))
               .toDouble(),
           false);
     } else {
@@ -847,9 +748,7 @@ class RadialBarSeriesRendererExtension extends RadialBarSeriesRenderer
       );
       seriesRenderer.renderList.add(StyleOptions(
           fill: fillColor,
-          strokeWidth: stateProperties.renderingDetails.animateCompleted
-              ? strokeWidth
-              : 0,
+          strokeWidth: stateProperties.renderingDetails.animateCompleted ? strokeWidth : 0,
           strokeColor: strokeColor,
           opacity: opacity));
       seriesRenderer.renderList.add(PointHelper.getPathRect(point));
@@ -862,9 +761,7 @@ class RadialBarSeriesRendererExtension extends RadialBarSeriesRenderer
             canvas,
             StyleOptions(
                 fill: fillColor,
-                strokeWidth: stateProperties.renderingDetails.animateCompleted
-                    ? strokeWidth
-                    : 0,
+                strokeWidth: stateProperties.renderingDetails.animateCompleted ? strokeWidth : 0,
                 strokeColor: strokeColor,
                 opacity: opacity),
             path,
@@ -889,41 +786,27 @@ class RadialBarSeriesRendererExtension extends RadialBarSeriesRenderer
 
     final num? angle = hide ? oldEnd : pointEndAngle;
     final num? startAngle = hide ? oldStart : pointStartAngle;
-    if (actualDegree > 360 &&
-        angle != null &&
-        startAngle != null &&
-        angle >= startAngle + 180) {
-      _applyShadow(hide, angle, actualDegree, canvas, chart, point,
-          oldInnerRadius, oldRadius);
+    if (actualDegree > 360 && angle != null && startAngle != null && angle >= startAngle + 180) {
+      _applyShadow(hide, angle, actualDegree, canvas, chart, point, oldInnerRadius, oldRadius);
     }
   }
 
   /// Method to apply shadow at segment's end.
-  void _applyShadow(
-      bool hide,
-      num? pointEndAngle,
-      double actualDegree,
-      Canvas canvas,
-      SfCircularChart chart,
-      ChartPoint<dynamic> point,
-      num? oldInnerRadius,
-      num? oldRadius) {
+  void _applyShadow(bool hide, num? pointEndAngle, double actualDegree, Canvas canvas,
+      SfCircularChart chart, ChartPoint<dynamic> point, num? oldInnerRadius, num? oldRadius) {
     if (pointEndAngle != null && actualDegree > 360) {
-      final double currentInnerRadius =
-          hide ? oldInnerRadius!.toDouble() : innerRadius.toDouble();
-      final double outerRadius =
-          hide ? oldRadius!.toDouble() : radius.toDouble();
+      final double currentInnerRadius = hide ? oldInnerRadius!.toDouble() : innerRadius.toDouble();
+      final double outerRadius = hide ? oldRadius!.toDouble() : radius.toDouble();
       final double actualRadius = (currentInnerRadius - outerRadius).abs() / 2;
-      final Offset? midPoint = degreeToPoint(
-          pointEndAngle, (currentInnerRadius + outerRadius) / 2, center!);
+      final Offset? midPoint =
+          degreeToPoint(pointEndAngle, (currentInnerRadius + outerRadius) / 2, center!);
       if (actualRadius > 0) {
         double strokeWidth = actualRadius * 0.2;
         strokeWidth = strokeWidth < 3 ? 3 : (strokeWidth > 5 ? 5 : strokeWidth);
         shadowPaint = Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = strokeWidth
-          ..maskFilter =
-              MaskFilter.blur(BlurStyle.normal, _getSigmaFromRadius(3));
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, _getSigmaFromRadius(3));
 
         overFilledPaint = Paint()..color = fillColor;
         if (point.shader != null) {
@@ -932,21 +815,15 @@ class RadialBarSeriesRendererExtension extends RadialBarSeriesRenderer
 
         if (series.cornerStyle == CornerStyle.endCurve ||
             series.cornerStyle == CornerStyle.bothCurve) {
-          pointEndAngle =
-              (pointEndAngle > 360 ? pointEndAngle : (pointEndAngle - 360)) +
-                  11.5;
+          pointEndAngle = (pointEndAngle > 360 ? pointEndAngle : (pointEndAngle - 360)) + 11.5;
           final Path path = Path()
             ..addArc(
-                Rect.fromCircle(
-                    center: midPoint!,
-                    radius: actualRadius - (actualRadius * 0.05)),
+                Rect.fromCircle(center: midPoint!, radius: actualRadius - (actualRadius * 0.05)),
                 degreesToRadians(pointEndAngle + 22.5).toDouble(),
                 degreesToRadians(118.125).toDouble());
           final Path overFilledPath = Path()
-            ..addArc(
-                Rect.fromCircle(center: midPoint, radius: actualRadius),
-                degreesToRadians(pointEndAngle - 20).toDouble(),
-                degreesToRadians(225).toDouble());
+            ..addArc(Rect.fromCircle(center: midPoint, radius: actualRadius),
+                degreesToRadians(pointEndAngle - 20).toDouble(), degreesToRadians(225).toDouble());
           if (chart.onCreateShader != null && point.shader == null) {
             shadowPaths.add(path);
             overFilledPaths.add(overFilledPath);
@@ -960,11 +837,11 @@ class RadialBarSeriesRendererExtension extends RadialBarSeriesRenderer
             ..style = PaintingStyle.stroke
             ..strokeWidth = strokeWidth
             ..color = fillColor;
-          final Offset? startPoint = degreeToPoint(
-              pointEndAngle, outerRadius - (outerRadius * 0.025), center!);
+          final Offset? startPoint =
+              degreeToPoint(pointEndAngle, outerRadius - (outerRadius * 0.025), center!);
 
-          final Offset? endPoint = degreeToPoint(pointEndAngle,
-              currentInnerRadius + (currentInnerRadius * 0.025), center!);
+          final Offset? endPoint = degreeToPoint(
+              pointEndAngle, currentInnerRadius + (currentInnerRadius * 0.025), center!);
 
           final Offset? overFilledStartPoint =
               degreeToPoint(pointEndAngle - 2, outerRadius, center!);
@@ -983,8 +860,7 @@ class RadialBarSeriesRendererExtension extends RadialBarSeriesRenderer
             overFilledPaths.add(overFilledPath);
           } else {
             canvas.drawLine(startPoint!, endPoint!, shadowPaint);
-            canvas.drawLine(
-                overFilledStartPoint!, overFilledEndPoint!, overFilledPaint!);
+            canvas.drawLine(overFilledStartPoint!, overFilledEndPoint!, overFilledPaint!);
           }
         }
       }
