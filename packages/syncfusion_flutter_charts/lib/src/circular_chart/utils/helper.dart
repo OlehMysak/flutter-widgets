@@ -220,16 +220,16 @@ void canRepaintSeries(List<CircularSeriesRendererExtension> currentSeriesRendere
       series.dataLabelSettings.borderWidth != oldWidgetSeries.dataLabelSettings.borderWidth ||
       series.dataLabelSettings.borderColor.value !=
           oldWidgetSeries.dataLabelSettings.borderColor.value ||
-      series.dataLabelSettings.textStyle.color?.value !=
-          oldWidgetSeries.dataLabelSettings.textStyle.color?.value ||
-      series.dataLabelSettings.textStyle.fontWeight !=
-          oldWidgetSeries.dataLabelSettings.textStyle.fontWeight ||
-      series.dataLabelSettings.textStyle.fontSize !=
-          oldWidgetSeries.dataLabelSettings.textStyle.fontSize ||
-      series.dataLabelSettings.textStyle.fontFamily !=
-          oldWidgetSeries.dataLabelSettings.textStyle.fontFamily ||
-      series.dataLabelSettings.textStyle.fontStyle !=
-          oldWidgetSeries.dataLabelSettings.textStyle.fontStyle ||
+      series.dataLabelSettings.textStyle?.color?.value !=
+          oldWidgetSeries.dataLabelSettings.textStyle?.color?.value ||
+      series.dataLabelSettings.textStyle?.fontWeight !=
+          oldWidgetSeries.dataLabelSettings.textStyle?.fontWeight ||
+      series.dataLabelSettings.textStyle?.fontSize !=
+          oldWidgetSeries.dataLabelSettings.textStyle?.fontSize ||
+      series.dataLabelSettings.textStyle?.fontFamily !=
+          oldWidgetSeries.dataLabelSettings.textStyle?.fontFamily ||
+      series.dataLabelSettings.textStyle?.fontStyle !=
+          oldWidgetSeries.dataLabelSettings.textStyle?.fontStyle ||
       series.dataLabelSettings.labelIntersectAction !=
           oldWidgetSeries.dataLabelSettings.labelIntersectAction ||
       series.dataLabelSettings.labelPosition != oldWidgetSeries.dataLabelSettings.labelPosition ||
